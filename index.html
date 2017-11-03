@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Quick Note</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"/>
+</head>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<style>
+    html {
+         background-color: #e5e5e5;
+    }
+    
+    * {
+        font-family: 'Roboto', sans-serif;
+        font-size: large;
+        margin: 0;
+        padding: 0;
+       
+    }
+    
+    h1 {
+      font-size: 1.6em;
+      background-color: #fcfcfc;
+      color: #333333;
+    }
+    
+    #contenedor {
+        width: 100%;
+        height: 100%;
+        clear: both;
+    }
+    
+    #cabecera {
+        width: 95%;
+        padding: 5px;
+        padding-top: 1em;
+        margin: auto;
+        background-color: #FCFCFC;
+        text-align: center;
+        height: 3em;
+    }
+    
+    
+    #cerrar {
+        width: 2em;
+        height: 2em;
+        float: right;
+        
+    }
+    
+    .nota {
+        background-color: #fCfcfc;
+        width: 95%;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 8px;
+   /*     height: 3.5em;*/
+        padding: 8px;
+        overflow:auto;
+        border-radius: 2px;
+        -webkit-box-shadow: 2px 2px 0px 0px rgba(125,125,125,1);
+        -moz-box-shadow: 2px 2px 0px 0px rgba(125,125,125,1);
+        box-shadow: 2px 2px 0px 0px rgba(125,125,125,1);
+    
+    }
+    
+    #notainicial{
+        height: 3.5em;
+    }
+    
+    :focus {
+        outline: 0;
+        border-width: 0px;
+    
+        
+        -webkit-box-shadow: 0px 0px 10px 0px rgba(90,175,245,1);
+        -moz-box-shadow: 0px 0px 10px 0px rgba(90,175,245,1);
+        box-shadow: 0px 0px 10px 0px rgba(90,175,245,1);
+    }
+</style>
+
+<script type="text/javascript" src="cordova.js"></script>
+
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+<script src="./librerias/jquery.ui.touch-punch.min.js"></script>
+    
+
+
+<script>
+    window.addEventListener('load',iniciar)
+    function iniciar(args) {
+        //Definici�n de variables.
+ //       var notas = {nota:[]}
+        var cerrar = document.getElementById('cerrar')
+        var contenedor = document.getElementById('contenedor');
+        
+        //Creaci�n de notainicial
+        
+        var notainicial = document.createElement('div');
+        notainicial.setAttribute('id','notainicial');
+        notainicial.setAttribute('class','nota');
+        notainicial.setAttribute('contentEditable','true');
+        contenedor.appendChild(notainicial);
+        notainicial.focus();
+       
+        
+       
+        
+        //Asignaci�n de eventos
+        cerrar.addEventListener('click',grabartodas)
+        
+        //llamada funciones
+        mostrarnotas();
+ //        setTimeout(function(){ $( "#notainicial" ).trigger( "tap" );},100);
+        $( "#notainicial" ).trigger( "tap" )
+   //     Keyboard.show();
+    
+
+        
+    }
+    
+    //Grabamos cambios de notainicial
+    function grabarnotainicial() {
+        console.log('graba ')
+        var enmemoria = JSON.parse(window.localStorage.notas);
+            //Falta comprobar que ha escrito algo antes de guardar
+        console.log(notainicial)
+            enmemoria.nota.unshift(notainicial.innerText);
+            window.localStorage.notas=JSON.stringify(enmemoria);
+    }
+    
+    
+    //para eliminar notas una opci�n grabar todo lo
+    //que haya en el DOM al cerrar en vez de grabar la
+    //inicial y eliminar una a una
+    //
+    //Mejor gragar todas, asi pueden elimnar mas de una mas facil de programar
+    function grabartodas() {
+        var enmemoria = JSON.parse(window.localStorage.notas);
+        //Rellenar notas
+        // var todas = document.getElementsByClassName('nota');//meda problema al final pone un objeto mas de lo esperado
+        var todas = document.querySelectorAll('div.nota');
+        
+        //inicializo el localstorage y las grabo todas
+        enmemoria.nota=[];
+        console.log(todas);
+            for (var i in todas){
+                
+                if (todas[i].textContent!=="" && todas[i].textContent !== undefined) {
+                    //A�ado la fecha a la notainicial
+                    if(i==0) todas[i].innerText=anadirfechaacadena(todas[i].innerText);
+                    console.dir(todas[i])
+                    enmemoria.nota.push(todas[i].innerText)
+                }  
+            }
+        window.localStorage.notas=JSON.stringify(enmemoria);
+        
+        //Eliminio notas del DOM antes de recargar
+        var notasendom = document.querySelectorAll('div.nota');
+        console.dir(notasendom)
+        for ( var i = 0 ; i < notasendom.length ; i++) 
+            {
+                notasendom[i].parentElement.removeChild(notasendom[i])
+            }
+        
+        console.dir(notasendom)
+        //salimos de la aplicacion una vez grabada
+        //navigator.app.exitApp();
+        iniciar();//v2 recargo todo despues de guardar en vez de salir como antes
+    }
+    
+    //MOstramos las nots guardadas anteriormente, si las hay
+    function mostrarnotas() {
+        if (window.localStorage.notas) {
+            var enmemoria = JSON.parse(window.localStorage.notas);
+            //Falta comprobar que ha escrito algo antes de guardar
+            //
+            console.log(enmemoria)
+            for (var i in enmemoria.nota){
+                //
+                var notatemporal = document.createElement('div');
+                notatemporal.setAttribute('class','nota');
+                var textnodetemporal = document.createTextNode(enmemoria.nota[i]);
+           //     notatemporal.appendChild(textnodetemporal);
+                notatemporal.innerHTML=enmemoria.nota[i];
+                contenedor.appendChild(notatemporal);
+                
+                //console.log(notatemporal)
+            }
+        } else {
+            //Inicializo notas con un atributo nota con array vacio
+            window.localStorage.notas='{"nota":[]}';
+        }
+        
+    }
+    
+  /*  function crearnota(texto) {
+        var notainicial = document.createElement('tex');
+        notainicial.setAttribute('id','notainicial');
+        notainicial.setAttribute('class','nota');
+    }*/
+    
+    //Eliminacion de notas con jquery para arrastrar
+    //con este efecto se eliminan del DOMv 
+     $( function() {
+    
+        $(window).on('swipeleft', function(evento){
+                                
+                              //console.dir(evento.target)
+                          
+                              $(evento.target).animate(
+                                  { "margin-left": "-100%" }, 300,function()                   {$(evento.target).remove();navigator.vibrate(200)});
+                                });
+                        
+    });
+     
+     function anadirfechaacadena(cadena) {
+        var fechaactual = new Date();
+        cadena = cadena + ' ('+(fechaactual.toLocaleString()).split(" ")[0]+')';
+        return cadena;
+     }
+    
+   
+</script>
+
+
+<body>
+<div id="contenedor">
+    <div id='cabecera'>
+        <img id='cerrar' src="cerrar5.png" />
+        <h1>Quick Note</h1>
+        
+    </div>
+   <!--  <span id='cerrar' class="ui-icon ui-icon-arrowthick-1-n"></span>-->
+</div>
+
+
+</body>
+</html>
